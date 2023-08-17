@@ -1,4 +1,18 @@
 .App {
-  font-family: sans-serif;
   text-align: center;
+}
+
+svg {
+  overflow: visible;
+  background-color: antiquewhite;
+}
+
+rect {
+  fill: blue;
+  stroke: black;
+  stroke-width: 2;
+}
+
+text {
+  font-size: 14px;
 }
