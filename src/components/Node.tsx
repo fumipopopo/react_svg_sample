@@ -27,8 +27,13 @@ const Node: React.FC<NodeProps> = ({ x, y, label }) => {
       // ドラッグ中のマウス位置を取得し、オフセットを考慮して新しい位置を計算
       if (svgRef && svgRef.current) {
         const svgRect = svgRef.current.getBoundingClientRect();
-        const newX = e.pageX - dragOffset.x - svgRect.left;
-        const newY = e.pageY - dragOffset.y - svgRect.top;
+        var newX = e.pageX - dragOffset.x - svgRect.left;
+        var newY = e.pageY - dragOffset.y - svgRect.top;
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        //TODO: 以下はオブジェクト1つ分はみ出ているので、オブジェクトのサイズ分マイナスする必要がある。
+        if (newX > svgRect.width) newX = svgRect.width;
+        if (newY > svgRect.height) newY = svgRect.height;
         setPosition({ x: newX, y: newY });
       }
     }
@@ -39,7 +44,13 @@ const Node: React.FC<NodeProps> = ({ x, y, label }) => {
   };
 
   return (
-    <svg ref={svgRef} width="1240" height="1754">
+    <svg
+      ref={svgRef}
+      width="500"
+      height="500"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseUp}
+    >
       <rect
         x={position.x}
         y={position.y}
@@ -47,9 +58,7 @@ const Node: React.FC<NodeProps> = ({ x, y, label }) => {
         height={20}
         rx={10}
         ry={10}
-        onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseUp}
         onMouseUp={handleMouseUp}
       />
       <text x={position.x} y={position.y + 35} textAnchor="middle" fill="black">

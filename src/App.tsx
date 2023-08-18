@@ -14,9 +14,7 @@ export default function App() {
   return (
     <div className="App">
       <h1>Hello CodeSandbox</h1>
-      <h2>
-        test!!! {positionSVG.x}/{positionSVG.y}
-      </h2>
+      <h2>test svg</h2>
       <div>
         <Node x={50} y={50} label="A" />
         <Node x={100} y={100} label="B" />
