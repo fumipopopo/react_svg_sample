@@ -1,21 +1,20 @@
 import React, { useState, useRef } from "react";
 
 interface TimerProps {
-  x: number;
-  y: number;
-  label: string;
+  radius: number;
   minutes: number;
 }
 
-const Timer: React.FC<TimerProps> = ({ x, y, label, minutes }) => {
-  const [position, setPosition] = useState({ x, y });
+const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
+  const draggSize = 20;
+  const [position, setPosition] = useState({
+    x: getCircleX(minutesToRadian(minutes), radius) - draggSize / 2,
+    y: getCircleY(minutesToRadian(minutes), radius) - draggSize / 2,
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const radius = 100;
-  const degree = minutes * 6;
-  const radian = degree * (Math.PI / 180);
   const sectorPath = getSectorPath(radius, minutes);
 
   const handleMouseDown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -52,15 +51,12 @@ const Timer: React.FC<TimerProps> = ({ x, y, label, minutes }) => {
   return (
     <svg
       ref={svgRef}
-      width="200"
-      height="200"
+      width={radius * 2}
+      height={radius * 2}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
     >
       <text>{minutes}</text>
-      <text x={position.x} y={position.y + 35} textAnchor="middle" fill="black">
-        {label}
-      </text>
       <circle
         cx={radius}
         cy={radius}
@@ -69,8 +65,15 @@ const Timer: React.FC<TimerProps> = ({ x, y, label, minutes }) => {
         stroke="black"
         strokeWidth={3}
       />
-      {/* <path d="M200,200 L200,0 A200,200 0 0,1 400,200z" fill="red" /> */}
-      <path d={sectorPath} fill="blue" />
+      <path d={sectorPath} fill="red" />
+      <circle
+        cx={radius}
+        cy={radius}
+        r={radius}
+        fill="#00000000"
+        stroke="black"
+        strokeWidth={3}
+      />
       <rect
         x={position.x}
         y={position.y}
@@ -90,9 +93,14 @@ const Timer: React.FC<TimerProps> = ({ x, y, label, minutes }) => {
 
 export default Timer;
 
-function getSectorPath(radius: number, minutes: number) {
+function minutesToRadian(minutes: number) {
   const degree = minutes * 6;
   const radian = degree * (Math.PI / 180);
+  return radian;
+}
+
+function getSectorPath(radius: number, minutes: number) {
+  const radian = minutesToRadian(minutes);
   // 始点（真ん中）
   var path = "M" + radius + "," + radius;
   // 0分を扇の開始にする
@@ -107,9 +115,9 @@ function getSectorPath(radius: number, minutes: number) {
       " 0 " +
       (minutes < 30 ? 0 : 1) +
       ",1 " +
-      (radius + getCircleX(radian, radius)) +
+      getCircleX(radian, radius) +
       "," +
-      (radius - getCircleY(radian, radius));
+      getCircleY(radian, radius);
   } else if (minutes == 60) {
     // 60分の場合は0と同じになってしまうので別処理
     path +=
@@ -120,9 +128,9 @@ function getSectorPath(radius: number, minutes: number) {
 }
 
 function getCircleY(radians: number, radius: number) {
-  return Math.cos(radians) * radius;
+  return radius - Math.cos(radians) * radius;
 }
 
 function getCircleX(radians: number, radius: number) {
-  return Math.sin(radians) * radius;
+  return radius + Math.sin(radians) * radius;
 }

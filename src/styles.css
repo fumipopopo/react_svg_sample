@@ -5,6 +5,7 @@
 svg {
   overflow: visible;
   background-color: antiquewhite;
+  margin: 5px;
 }
 
 rect {
