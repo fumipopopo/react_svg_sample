@@ -15,6 +15,41 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const calcRadian =
+    Math.atan2(
+      radius - (position.x + draggSize / 2),
+      position.y + draggSize / 2 - radius
+    ) + Math.PI;
+  const calcDegree = calcRadian / (Math.PI / 180);
+  minutes = Math.round(calcDegree / 6);
+
+  const getSectorPath = (radius: number, minutes: number) => {
+    const radian = minutesToRadian(minutes);
+    // 始点（真ん中）
+    var path = "M" + radius + "," + radius;
+    // 0分を扇の開始にする
+    path += " L" + radius + ",0";
+    if (minutes < 60) {
+      // 60分未満の扇
+      path +=
+        " A" +
+        radius +
+        "," +
+        radius +
+        " 0 " +
+        (minutes < 30 ? 0 : 1) +
+        ",1 " +
+        getCircleX(radian, radius) +
+        "," +
+        getCircleY(radian, radius);
+    } else if (minutes == 60) {
+      // 60分の場合は0と同じになってしまうので別処理
+      path +=
+        " A" + radius + "," + radius + " 0 0,1 " + radius + "," + radius * 2;
+      path += " A" + radius + "," + radius + " 0 1,1 " + radius + ",0";
+    }
+    return path + "z";
+  };
   const sectorPath = getSectorPath(radius, minutes);
 
   const handleMouseDown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -34,11 +69,6 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
         const svgRect = svgRef.current.getBoundingClientRect();
         var newX = e.pageX - dragOffset.x - svgRect.left;
         var newY = e.pageY - dragOffset.y - svgRect.top;
-        if (newX < 0) newX = 0;
-        if (newY < 0) newY = 0;
-        //TODO: 以下はオブジェクト1つ分はみ出ているので、オブジェクトのサイズ分マイナスする必要がある。
-        if (newX > svgRect.width) newX = svgRect.width;
-        if (newY > svgRect.height) newY = svgRect.height;
         setPosition({ x: newX, y: newY });
       }
     }
@@ -87,6 +117,9 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
       <text x={position.x} y={position.y + 50} textAnchor="middle" fill="black">
         {position.x}/{position.y}
       </text>
+      <text x={position.x} y={position.y + 65} textAnchor="middle" fill="black">
+        {calcDegree}
+      </text>
     </svg>
   );
 };
@@ -97,34 +130,6 @@ function minutesToRadian(minutes: number) {
   const degree = minutes * 6;
   const radian = degree * (Math.PI / 180);
   return radian;
-}
-
-function getSectorPath(radius: number, minutes: number) {
-  const radian = minutesToRadian(minutes);
-  // 始点（真ん中）
-  var path = "M" + radius + "," + radius;
-  // 0分を扇の開始にする
-  path += " L" + radius + ",0";
-  if (minutes < 60) {
-    // 60分未満の扇
-    path +=
-      " A" +
-      radius +
-      "," +
-      radius +
-      " 0 " +
-      (minutes < 30 ? 0 : 1) +
-      ",1 " +
-      getCircleX(radian, radius) +
-      "," +
-      getCircleY(radian, radius);
-  } else if (minutes == 60) {
-    // 60分の場合は0と同じになってしまうので別処理
-    path +=
-      " A" + radius + "," + radius + " 0 0,1 " + radius + "," + radius * 2;
-    path += " A" + radius + "," + radius + " 0 1,1 " + radius + ",0";
-  }
-  return path + "z";
 }
 
 function getCircleY(radians: number, radius: number) {
