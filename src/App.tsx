@@ -1,7 +1,6 @@
 import "./styles.css";
 import Node from "./components/Node";
 import Timer from "./components/Timer";
-import { useState } from "react";
 
 export default function App() {
   return (

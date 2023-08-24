@@ -76,6 +76,7 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    // TODO: ここで丸の位置を戻す
   };
 
   return (
@@ -114,12 +115,6 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       />
-      <text x={position.x} y={position.y + 50} textAnchor="middle" fill="black">
-        {position.x}/{position.y}
-      </text>
-      <text x={position.x} y={position.y + 65} textAnchor="middle" fill="black">
-        {calcDegree}
-      </text>
     </svg>
   );
 };
