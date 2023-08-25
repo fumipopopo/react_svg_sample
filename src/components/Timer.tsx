@@ -50,7 +50,6 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
     }
     return path + "z";
   };
-  const sectorPath = getSectorPath(radius, minutes);
 
   const handleMouseDown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     setIsDragging(true);
@@ -96,7 +95,7 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
         stroke="black"
         strokeWidth={3}
       />
-      <path d={sectorPath} fill="red" />
+      <path d={getSectorPath(radius, minutes)} fill="red" />
       <circle
         cx={radius}
         cy={radius}
