@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import FanShaped from "./FanShaped";
+import { minutesToRadian, getCircleX, getCircleY } from "../utils/circle";
 
 interface TimerProps {
   radius: number;
@@ -7,6 +9,12 @@ interface TimerProps {
 
 const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   const draggSize = 20;
+  if (minutes < 0) {
+    minutes = 0;
+  }
+  if (minutes > 60) {
+    minutes = 60;
+  }
   const [position, setPosition] = useState({
     x: getCircleX(minutesToRadian(minutes), radius) - draggSize / 2,
     y: getCircleY(minutesToRadian(minutes), radius) - draggSize / 2,
@@ -15,6 +23,7 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // TODO: minutesの初期値が0の場合、ここが微妙
   const calcRadian =
     Math.atan2(
       radius - (position.x + draggSize / 2),
@@ -22,34 +31,6 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
     ) + Math.PI;
   const calcDegree = calcRadian / (Math.PI / 180);
   minutes = Math.round(calcDegree / 6);
-
-  const getSectorPath = (radius: number, minutes: number) => {
-    const radian = minutesToRadian(minutes);
-    // 始点（真ん中）
-    var path = "M" + radius + "," + radius;
-    // 0分を扇の開始にする
-    path += " L" + radius + ",0";
-    if (minutes < 60) {
-      // 60分未満の扇
-      path +=
-        " A" +
-        radius +
-        "," +
-        radius +
-        " 0 " +
-        (minutes < 30 ? 0 : 1) +
-        ",1 " +
-        getCircleX(radian, radius) +
-        "," +
-        getCircleY(radian, radius);
-    } else if (minutes == 60) {
-      // 60分の場合は0と同じになってしまうので別処理
-      path +=
-        " A" + radius + "," + radius + " 0 0,1 " + radius + "," + radius * 2;
-      path += " A" + radius + "," + radius + " 0 1,1 " + radius + ",0";
-    }
-    return path + "z";
-  };
 
   const handleMouseDown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     setIsDragging(true);
@@ -87,30 +68,19 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
       onMouseLeave={handleMouseUp}
     >
       <text>{minutes}</text>
-      <circle
+      <FanShaped
         cx={radius}
         cy={radius}
-        r={radius}
-        fill="white"
-        stroke="black"
-        strokeWidth={3}
-      />
-      <path d={getSectorPath(radius, minutes)} fill="red" />
-      <circle
-        cx={radius}
-        cy={radius}
-        r={radius}
-        fill="#00000000"
-        stroke="black"
-        strokeWidth={3}
+        radius={radius}
+        radian={minutesToRadian(minutes)}
       />
       <rect
         x={position.x}
         y={position.y}
-        width={20}
-        height={20}
-        rx={10}
-        ry={10}
+        width={draggSize}
+        height={draggSize}
+        rx={draggSize / 2}
+        ry={draggSize / 2}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       />
@@ -119,17 +89,3 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
 };
 
 export default Timer;
-
-function minutesToRadian(minutes: number) {
-  const degree = minutes * 6;
-  const radian = degree * (Math.PI / 180);
-  return radian;
-}
-
-function getCircleY(radians: number, radius: number) {
-  return radius - Math.cos(radians) * radius;
-}
-
-function getCircleX(radians: number, radius: number) {
-  return radius + Math.sin(radians) * radius;
-}
