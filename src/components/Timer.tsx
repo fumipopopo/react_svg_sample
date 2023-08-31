@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import FanShaped from "./FanShaped";
 import { minutesToRadian, getCircleX, getCircleY } from "../utils/circle";
 
@@ -8,6 +8,7 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
+  const intervalId = useRef<NodeJS.Timer | null>(null);
   const draggSize = 20;
   if (minutes < 0) {
     minutes = 0;
@@ -15,6 +16,49 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   if (minutes > 60) {
     minutes = 60;
   }
+  const [time, setTime] = useState(minutes);
+
+  // タイマーのカウントを+1する関数countIncrementを定義
+  const countIncrement = () => {
+    setTime((t) => t - 1);
+    console.log("カウントアップ+1");
+  };
+
+  const setupFunc = () => {
+    if (intervalId.current !== null) {
+      return;
+    }
+    intervalId.current = setInterval(countIncrement, 1000);
+
+    return () => {
+      console.log("clean up");
+    };
+  };
+
+  useEffect(setupFunc, []);
+
+  // タイマーを止める関数countStopを定義
+  const countStop = () => {
+    // タイマーを停止する
+    if (intervalId.current) {
+      clearInterval(intervalId.current);
+    }
+    intervalId.current = null;
+
+    // タイマーを止めた時のカウントを保持する
+    setTime(time);
+  };
+
+  // タイマーを再開
+  const countStart = () => {
+    if (intervalId.current !== null) {
+      return;
+    }
+    intervalId.current = setInterval(countIncrement, 1000);
+
+    console.log(intervalId);
+  };
+
   const [position, setPosition] = useState({
     x: getCircleX(minutesToRadian(minutes), radius) - draggSize / 2,
     y: getCircleY(minutesToRadian(minutes), radius) - draggSize / 2,
@@ -23,14 +67,17 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // TODO: minutesの初期値が0の場合、ここが微妙
-  const calcRadian =
-    Math.atan2(
-      radius - (position.x + draggSize / 2),
-      position.y + draggSize / 2 - radius
-    ) + Math.PI;
-  const calcDegree = calcRadian / (Math.PI / 180);
-  minutes = Math.round(calcDegree / 6);
+  useEffect(() => {
+    if (!isDragging) {
+      setPosition({
+        x: getCircleX(minutesToRadian(time), radius) - draggSize / 2,
+        y: getCircleY(minutesToRadian(time), radius) - draggSize / 2,
+      });
+    }
+    if (time <= 0) {
+      countStop();
+    }
+  }, [time]);
 
   const handleMouseDown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     setIsDragging(true);
@@ -40,6 +87,7 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
       x: e.pageX - rect.left,
       y: e.pageY - rect.top,
     });
+    countStop();
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -50,13 +98,25 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
         var newX = e.pageX - dragOffset.x - svgRect.left;
         var newY = e.pageY - dragOffset.y - svgRect.top;
         setPosition({ x: newX, y: newY });
+        const calcRadian =
+          Math.atan2(
+            radius - (position.x + draggSize / 2),
+            position.y + draggSize / 2 - radius
+          ) + Math.PI;
+        const calcDegree = calcRadian / (Math.PI / 180);
+        setTime(Math.round(calcDegree / 6));
       }
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    // TODO: ここで丸の位置を戻す
+    countStart();
+    // ここで丸の位置を戻す
+    setPosition({
+      x: getCircleX(minutesToRadian(time), radius) - draggSize / 2,
+      y: getCircleY(minutesToRadian(time), radius) - draggSize / 2,
+    });
   };
 
   return (
@@ -67,12 +127,12 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
     >
-      <text>{minutes}</text>
+      <text>{time}</text>
       <FanShaped
         cx={radius}
         cy={radius}
         radius={radius}
-        radian={minutesToRadian(minutes)}
+        radian={minutesToRadian(time)}
       />
       <rect
         x={position.x}
