@@ -9,7 +9,7 @@ interface TimerProps {
 
 const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
   const intervalId = useRef<NodeJS.Timer | null>(null);
-  const draggSize = 20;
+  const draggSize = 16;
   if (minutes < 0) {
     minutes = 0;
   }
@@ -20,8 +20,7 @@ const Timer: React.FC<TimerProps> = ({ radius, minutes }) => {
 
   // タイマーのカウントを+1する関数countIncrementを定義
   const countIncrement = () => {
-    setTime((t) => t - 1);
-    console.log("カウントアップ+1");
+    setTime((t) => (t <= 0 ? 0 : t - 1));
   };
 
   const setupFunc = () => {
