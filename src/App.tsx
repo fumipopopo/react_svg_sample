@@ -8,12 +8,12 @@ export default function App() {
       <h1>Hello CodeSandbox</h1>
       <h2>test svg</h2>
       <div>
-        <Timer radius={100} minutes={0} />
-        <Timer radius={50} minutes={15} />
-        <Timer radius={50} minutes={30} />
-        <Timer radius={50} minutes={45} />
-        <Timer radius={50} minutes={60} />
-        <Timer radius={50} minutes={61} />
+        <Timer radius={100} initialtime={15} timeunit={1} />
+        <Timer radius={50} initialtime={30} timeunit={1} />
+        <Timer radius={50} initialtime={45} timeunit={1} />
+        <Timer radius={50} initialtime={45} timeunit={60} />
+        <Timer radius={50} initialtime={60} timeunit={60} />
+        <Timer radius={50} initialtime={61} timeunit={60} />
         <Node x={100} y={100} label="B" />
       </div>
     </div>
