@@ -5,8 +5,8 @@ import Timer from "./components/Timer";
 export default function App() {
   return (
     <div className="App">
-      <h1>Hello CodeSandbox</h1>
-      <h2>test svg</h2>
+      <h1>ポインターで動かせるタイマー</h1>
+      <h2>青い丸を掴んで動かしてみてね！</h2>
       <div>
         <Timer radius={100} initialtime={15} timeunit={1} />
         <Timer radius={50} initialtime={30} timeunit={1} />
